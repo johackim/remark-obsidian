@@ -1,0 +1,5 @@
+Start
+
+![[Embed note]]
+
+End
