@@ -19,6 +19,18 @@ const defaultTitleToURL = (title) => `/${slugify(title, { lower: true })}`;
 
 const tocTitles = ['table of contents', 'table des matières'];
 
+const removeIgnoreParts = (tree) => {
+    const start = tree.children.findIndex(({ commentValue }) => commentValue === 'ignore');
+    const end = tree.children.findIndex(({ commentValue }) => commentValue === 'end ignore');
+
+    if (start === -1) return;
+
+    const elementsToDelete = (end === -1 ? tree.children.length : end) - start + 1;
+    tree.children.splice(start, elementsToDelete);
+
+    removeIgnoreParts(tree);
+};
+
 export const parseBracketLink = (bracketLink, titleToUrl = defaultTitleToURL) => {
     const [match] = bracketLink.matchAll(BRACKET_LINK_REGEX);
 
@@ -160,6 +172,8 @@ const plugin = (options = {}) => (tree) => {
 
         return node;
     });
+
+    removeIgnoreParts(tree);
 };
 
 export default plugin;

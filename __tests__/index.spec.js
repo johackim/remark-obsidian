@@ -1,6 +1,7 @@
 import fs from 'fs';
 import { remark } from 'remark';
 import remarkHtml from 'remark-html';
+import remarkComment from 'remark-comment';
 import plugin, { parseBracketLink } from '../src/index';
 
 test('Should support ==highlight text==', async () => {
@@ -154,6 +155,37 @@ test('Should parse multiple bracket links', () => {
         { title: 'Bracket link', href: '/bracket-link' },
         { title: 'Bracket link', href: '/bracket-link' },
     ]);
+});
+
+test('Should ignore content between "<!--ignore-->" and "<!--end ignore-->" HTML comments', async () => {
+    const text = [
+        'Hello world',
+        '<!--ignore-->',
+        'Private content',
+        '<!--end ignore-->',
+        '<!--ignore-->',
+        'Private content',
+        '<!--end ignore-->',
+        'Bye world',
+    ].join('\n');
+
+    const output = String(await remark().use(remarkComment, { ast: true }).use(plugin).process(text));
+
+    expect(output).toContain('Hello world');
+    expect(output).toContain('Bye world');
+    expect(output).not.toContain('Private content');
+});
+
+test('Should ignore content after "<!--ignore-->" HTML comment', async () => {
+    const text = [
+        'Hello world',
+        '<!--ignore-->',
+        'Private content',
+    ].join('\n');
+
+    const output = String(await remark().use(remarkComment, { ast: true }).use(plugin).process(text));
+
+    expect(output).not.toContain('Private content');
 });
 
 test.skip('Should support ==highlight **bold text**==', async () => {
