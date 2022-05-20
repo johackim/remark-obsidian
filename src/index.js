@@ -54,6 +54,8 @@ export const parseBracketLink = (bracketLink, titleToUrl = defaultTitleToURL) =>
 };
 
 const plugin = (options = {}) => (tree) => {
+    removeIgnoreParts(tree);
+
     const { markdownFolder = `${process.cwd()}/content`, titleToUrl = defaultTitleToURL, toc = [], headings = [] } = options;
 
     visit(tree, 'heading', (node, index, parent) => {
@@ -172,8 +174,6 @@ const plugin = (options = {}) => (tree) => {
 
         return node;
     });
-
-    removeIgnoreParts(tree);
 };
 
 export default plugin;
