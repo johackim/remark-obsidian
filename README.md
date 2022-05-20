@@ -27,13 +27,34 @@ yarn add -D remark-obsidian
 
 ## Usage
 
+With [remark](https://github.com/remarkjs/remark/) :
+
 ```js
+import remark from 'remark';
 import remarkObsidian from 'remark-obsidian';
 
 const html = String(await remark().use(remarkObsidian).process('[[Hello world]]'));
-console.log(html); // <a href="hello-world">Hello world</a>
+console.log(html); // <a href="/hello-world">Hello world</a>
 ```
 
+With [unified](https://github.com/unifiedjs/unified) :
+
+```js
+import { unified } from 'unified'
+import remarkObsidian from 'remark-obsidian';
+import remarkParse from 'remark-parse';
+import remarkRehype from 'remark-rehype';
+import rehypeStringify from 'rehype-stringify';
+
+const { value } = unified()
+    .use(remarkParse)
+    .use(remarkObsidian)
+    .use(remarkRehype, { allowDangerousHtml: true })
+    .use(rehypeStringify, { allowDangerousHtml: true })
+    .processSync('[[Hello world]]');
+
+console.log(value); // <a href="/hello-world">Hello world</a>
+```
 ## Running the tests
 
 ```bash
