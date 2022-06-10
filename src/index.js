@@ -37,20 +37,21 @@ export const parseBracketLink = (bracketLink, titleToUrl = defaultTitleToURL) =>
     if (!match) return bracketLink;
 
     const [, link, heading, text] = match;
+    const href = titleToUrl(link);
 
     if (heading && text) {
-        return { href: `${titleToUrl(link)}#${slugify(heading, { lower: true })}`, title: text };
+        return { href: `${href}#${slugify(heading, { lower: true })}`, title: text };
     }
 
     if (heading) {
-        return { href: `${titleToUrl(link)}#${slugify(heading, { lower: true })}`, title: link };
+        return { href: `${href}#${slugify(heading, { lower: true })}`, title: link };
     }
 
     if (text) {
-        return { href: titleToUrl(link), title: text };
+        return { href, title: text };
     }
 
-    return { href: titleToUrl(link), title: link };
+    return { href, title: link };
 };
 
 const plugin = (options = {}) => (tree) => {
@@ -118,23 +119,25 @@ const plugin = (options = {}) => (tree) => {
             const html = paragraph.replace(
                 BRACKET_LINK_REGEX,
                 (bracketLink, link, heading, text) => {
+                    const href = titleToUrl(link, markdownFolder);
+
                     if (node.children.some(({ value, type }) => value === bracketLink && type === 'inlineCode')) {
                         return bracketLink;
                     }
 
                     if (heading && text) {
-                        return `<a href="${titleToUrl(link, markdownFolder)}#${slugify(heading, { lower: true })}" title="${text}">${text}</a>`;
+                        return `<a href="${href}#${slugify(heading, { lower: true })}" title="${text}">${text}</a>`;
                     }
 
                     if (heading) {
-                        return `<a href="${titleToUrl(link, markdownFolder)}#${slugify(heading, { lower: true })}" title="${link}">${link}</a>`;
+                        return `<a href="${href}#${slugify(heading, { lower: true })}" title="${link}">${link}</a>`;
                     }
 
                     if (text) {
-                        return `<a href="${titleToUrl(link, markdownFolder)}" title="${text}">${text}</a>`;
+                        return `<a href="${href}" title="${text}">${text}</a>`;
                     }
 
-                    return `<a href="${titleToUrl(link, markdownFolder)}" title="${link}">${link}</a>`;
+                    return `<a href="${href}" title="${link}">${link}</a>`;
                 },
             );
 
