@@ -31,6 +31,11 @@ const removeIgnoreParts = (tree) => {
     removeIgnoreParts(tree);
 };
 
+const defaultFetchEmbedContent = (fileName, options) => {
+    const filePath = `${options.markdownFolder}/${fileName}.md`;
+    return fs.readFileSync(filePath, 'utf8');
+};
+
 export const parseBracketLink = (bracketLink, titleToUrl = defaultTitleToURL) => {
     const [match] = bracketLink.matchAll(BRACKET_LINK_REGEX);
 
@@ -57,7 +62,13 @@ export const parseBracketLink = (bracketLink, titleToUrl = defaultTitleToURL) =>
 const plugin = (options = {}) => (tree) => {
     removeIgnoreParts(tree);
 
-    const { markdownFolder = `${process.cwd()}/content`, titleToUrl = defaultTitleToURL, toc = [], headings = [] } = options;
+    const {
+        markdownFolder = `${process.cwd()}/content`,
+        titleToUrl = defaultTitleToURL,
+        fetchEmbedContent = defaultFetchEmbedContent,
+        headings = [],
+        toc = [],
+    } = options;
 
     visit(tree, 'heading', (node, index, parent) => {
         const isDetectH2Toc = node.depth === 2 && tocTitles.includes(node.children[0].value.toLowerCase());
@@ -99,13 +110,15 @@ const plugin = (options = {}) => (tree) => {
 
         if (paragraph.match(EMBED_LINK_REGEX)) {
             const [, fileName] = EMBED_LINK_REGEX.exec(paragraph);
-            const filePath = `${markdownFolder}/${fileName}.md`;
 
-            if (node.children.some(({ type }) => type === 'inlineCode') || !fs.existsSync(filePath)) {
+            if (node.children.some(({ type }) => type === 'inlineCode')) {
                 return node;
             }
 
-            const content = fs.readFileSync(filePath, 'utf8');
+            const content = fetchEmbedContent(fileName, options);
+
+            if (!content) return node;
+
             const embedTree = remark().use(remarkFrontmatter).use(remarkGfm).parse(content);
 
             plugin(options)(embedTree);
