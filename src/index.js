@@ -17,8 +17,6 @@ const EMBED_LINK_REGEX = /!\[\[([a-zA-ZÀ-ÿ0-9-'?%.():&,+/€! ]+)\]\]/g;
 
 const defaultTitleToURL = (title) => `/${slugify(title, { lower: true })}`;
 
-const tocTitles = ['table of contents', 'table des matières'];
-
 const removeIgnoreParts = (tree) => {
     const start = tree.children.findIndex(({ commentValue }) => commentValue === 'ignore');
     const end = tree.children.findIndex(({ commentValue }) => commentValue === 'end ignore');
@@ -66,43 +64,7 @@ const plugin = (options = {}) => (tree) => {
         markdownFolder = `${process.cwd()}/content`,
         titleToUrl = defaultTitleToURL,
         fetchEmbedContent = defaultFetchEmbedContent,
-        headings = [],
-        toc = [],
     } = options;
-
-    visit(tree, 'heading', (node, index, parent) => {
-        const isDetectH2Toc = node.depth === 2 && tocTitles.includes(node.children[0].value.toLowerCase());
-
-        if (isDetectH2Toc) {
-            const siblings = parent.children;
-            const next = siblings[index + 1];
-
-            if (next.type === 'list') {
-                for (const item of next.children) {
-                    const bracketLink = item.children[0].children[0].value;
-                    const isSecondLevelExist = item.children[1]?.type === 'list';
-
-                    if (isSecondLevelExist) {
-                        const links = item.children[1].children
-                            .map((i) => ({
-                                ...parseBracketLink(i.children[0].children[0].value),
-                                group: bracketLink,
-                            }));
-
-                        toc.push(...links);
-                    } else {
-                        toc.push(parseBracketLink(bracketLink, titleToUrl));
-                    }
-                }
-            }
-        }
-    });
-
-    visit(tree, 'heading', (node) => {
-        if (node.depth === 2) {
-            headings.push(node.children[0].value);
-        }
-    });
 
     visit(tree, 'paragraph', (node, index, parent) => {
         const markdown = toMarkdown(node, { extensions: [gfmFootnoteToMarkdown(), gfmStrikethroughToMarkdown] });

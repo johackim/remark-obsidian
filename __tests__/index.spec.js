@@ -110,35 +110,6 @@ test('Should ignore highlights inside code blocks', async () => {
     expect(output).toContain('<code>==Highlight==</code>');
 });
 
-test('Should extract table of content', async () => {
-    const text = fs.readFileSync(`${process.cwd()}/__tests__/fixtures/Course.md`, 'utf8');
-    const toc = [];
-
-    String(await remark().use(plugin, { toc }).process(text));
-
-    expect(toc).toEqual([
-        { href: '/lesson-1', title: 'Lesson 1' },
-        { href: '/lesson-2', title: 'Lesson 2' },
-        { href: '/lesson-3', title: 'Lesson 3' },
-    ]);
-});
-
-test('Should extract table of content with two levels', async () => {
-    const text = fs.readFileSync(`${process.cwd()}/__tests__/fixtures/Course2.md`, 'utf8');
-    const toc = [];
-
-    String(await remark().use(plugin, { toc }).process(text));
-
-    expect(toc).toEqual([
-        { href: '/lesson-1', title: 'Lesson 1', group: 'Module 1 : Introduction' },
-        { href: '/lesson-2', title: 'Lesson 2', group: 'Module 1 : Introduction' },
-        { href: '/lesson-1', title: 'Lesson 1', group: 'Module 2 : Intermediaire' },
-        { href: '/lesson-2', title: 'Lesson 2', group: 'Module 2 : Intermediaire' },
-        { href: '/lesson-3', title: 'Lesson 3', group: 'Module 2 : Intermediaire' },
-        { href: '/lesson-1', title: 'Lesson 1', group: 'Module 3 : Avancé' },
-    ]);
-});
-
 test('Should parse bracket link', () => {
     const bracketLink = '[[Bracket link]]';
     const data = parseBracketLink(bracketLink);
