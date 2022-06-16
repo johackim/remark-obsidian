@@ -18,8 +18,8 @@ const EMBED_LINK_REGEX = /!\[\[([a-zA-ZÀ-ÿ0-9-'?%.():&,+/€! ]+)\]\]/g;
 const defaultTitleToURL = (title) => `/${slugify(title, { lower: true })}`;
 
 const removeIgnoreParts = (tree) => {
-    const start = tree.children.findIndex(({ commentValue }) => commentValue === 'ignore');
-    const end = tree.children.findIndex(({ commentValue }) => commentValue === 'end ignore');
+    const start = tree.children.findIndex(({ commentValue }) => commentValue?.trim() === 'ignore');
+    const end = tree.children.findIndex(({ commentValue }) => commentValue?.trim() === 'end ignore');
 
     if (start === -1) return;
 
