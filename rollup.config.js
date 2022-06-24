@@ -6,8 +6,8 @@ import { terser } from 'rollup-plugin-terser';
 export default {
     input: 'src/index.js',
     output: [
-        { format: 'esm', file: 'dist/esm/index.js' },
-        { format: 'cjs', file: 'dist/cjs/index.js', exports: 'named' },
+        { format: 'esm', file: 'dist/esm/index.mjs' },
+        { format: 'cjs', file: 'dist/cjs/index.cjs', exports: 'named' },
     ],
     plugins: [
         nodeResolve(),
