@@ -29,6 +29,20 @@ const removeIgnoreParts = (tree) => {
     removeIgnoreParts(tree);
 };
 
+const addPaywall = (tree, paywall) => {
+    if (!paywall) return;
+
+    const start = tree.children.findIndex(({ commentValue }) => commentValue?.trim() === 'private');
+    const end = tree.children.findIndex(({ commentValue }) => commentValue?.trim() === 'end private');
+
+    if (start === -1) return;
+
+    const elementsToReplace = (end === -1 ? tree.children.length : end) - start + 1;
+    tree.children.splice(start, elementsToReplace, { type: 'html', value: paywall });
+
+    addPaywall(tree);
+};
+
 const defaultFetchEmbedContent = (fileName, options) => {
     const filePath = `${options.markdownFolder}/${fileName}.md`;
     return fs.readFileSync(filePath, 'utf8');
@@ -58,13 +72,15 @@ export const parseBracketLink = (bracketLink, titleToUrl = defaultTitleToURL) =>
 };
 
 const plugin = (options = {}) => (tree) => {
-    removeIgnoreParts(tree);
-
     const {
         markdownFolder = `${process.cwd()}/content`,
         titleToUrl = defaultTitleToURL,
         fetchEmbedContent = defaultFetchEmbedContent,
+        paywall = '<p>Paywall</p>',
     } = options;
+
+    removeIgnoreParts(tree);
+    addPaywall(tree, paywall);
 
     visit(tree, 'paragraph', (node, index, parent) => {
         const markdown = toMarkdown(node, { extensions: [gfmFootnoteToMarkdown(), gfmStrikethroughToMarkdown] });

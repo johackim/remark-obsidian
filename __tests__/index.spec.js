@@ -159,6 +159,20 @@ test('Should ignore content after "<!--ignore-->" HTML comment', async () => {
     expect(output).not.toContain('Private content');
 });
 
+test('Should display paywall after "<!-- private -->" HTML comment', async () => {
+    const paywall = '<p>Only for members</p>';
+    const text = [
+        'Hello world',
+        '<!-- private -->',
+        'here the s3cr3t password',
+    ].join('\n');
+
+    const output = String(await remark().use(remarkComment, { ast: true }).use(plugin, { paywall }).process(text));
+
+    expect(output).toContain(paywall);
+    expect(output).not.toContain('s3cr3t');
+});
+
 test.skip('Should support ==highlight **bold text**==', async () => {
     const text = '==highlight **bold text**==';
     const output = String(await remark().use(plugin).process(text));
