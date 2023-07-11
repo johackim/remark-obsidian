@@ -45,6 +45,9 @@ const addPaywall = (tree, paywall) => {
 
 const defaultFetchEmbedContent = (fileName, options) => {
     const filePath = `${options.markdownFolder}/${fileName}.md`;
+
+    if (!fs.existsSync(filePath)) return null;
+
     return fs.readFileSync(filePath, 'utf8');
 };
 
