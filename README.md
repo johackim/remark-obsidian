@@ -30,7 +30,7 @@ yarn add -D remark-obsidian
 With [remark](https://github.com/remarkjs/remark/) :
 
 ```js
-import remark from 'remark';
+import { remark } from 'remark';
 import remarkObsidian from 'remark-obsidian';
 
 const html = String(await remark().use(remarkObsidian).process('[[Hello world]]'));
