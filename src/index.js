@@ -11,11 +11,33 @@ import { gfmStrikethroughToMarkdown } from 'mdast-util-gfm-strikethrough';
 import remarkGfm from 'remark-gfm';
 import slugify from 'slugify';
 import { remark } from 'remark';
+import { parse } from 'yaml';
 
 const BRACKET_LINK_REGEX = /\[\[([a-zA-ZÀ-ÿ0-9-'?%.():&,+/€! ]+)#?([a-zA-ZÀ-ÿ0-9-'?%.():&,+/€! ]+)?\|?([a-zA-ZÀ-ÿ0-9-'?%.():&,+/€! ]+)?\]\]/g;
 const EMBED_LINK_REGEX = /!\[\[([a-zA-ZÀ-ÿ0-9-'?%.():&,+/€! ]+)\]\]/g;
 
-const defaultTitleToURL = (title) => `/${slugify(title, { lower: true })}`;
+const extractFrontmatter = (markdown) => {
+    const frontmatter = markdown.match(/^---([\s\S]+?)---/);
+
+    if (!frontmatter) return {};
+
+    const [, frontmatterString] = frontmatter;
+
+    return parse(frontmatterString);
+};
+
+const defaultTitleToURL = (title, folder) => {
+    const path = `${folder}/${title}.md`;
+
+    if (fs.existsSync(path)) {
+        const markdown = fs.readFileSync(path, 'utf8');
+        const { slug } = extractFrontmatter(markdown);
+
+        return `/${slug}`;
+    }
+
+    return `/${slugify(title, { lower: true })}`;
+};
 
 const removeIgnoreParts = (tree) => {
     const start = tree.children.findIndex(({ commentValue }) => commentValue?.trim() === 'ignore');
