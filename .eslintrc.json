@@ -13,6 +13,8 @@
         "max-len": [0],
         "object-curly-newline": [0],
         "import/no-extraneous-dependencies": [0],
-        "no-restricted-syntax": [0]
+        "no-restricted-syntax": [0],
+        "complexity": [2, 6],
+        "max-depth": [2, 2]
     }
 }
