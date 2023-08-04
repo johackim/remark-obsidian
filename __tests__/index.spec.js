@@ -115,7 +115,7 @@ test('Should parse bracket link', () => {
     const bracketLink = '[[Bracket link]]';
     const data = parseBracketLink(bracketLink);
 
-    expect(data).toEqual({ title: 'Bracket link', href: '/bracket-link' });
+    expect(data).toEqual({ title: 'Bracket link', href: '/bracket-link', slug: 'bracket-link' });
 });
 
 test('Should parse multiple bracket links', () => {
@@ -124,8 +124,8 @@ test('Should parse multiple bracket links', () => {
     const data = bracketLinks.map((bracketLink) => parseBracketLink(bracketLink));
 
     expect(data).toEqual([
-        { title: 'Bracket link', href: '/bracket-link' },
-        { title: 'Bracket link', href: '/bracket-link' },
+        { title: 'Bracket link', href: '/bracket-link', slug: 'bracket-link' },
+        { title: 'Bracket link', href: '/bracket-link', slug: 'bracket-link' },
     ]);
 });
 

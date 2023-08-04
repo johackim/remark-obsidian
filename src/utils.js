@@ -68,19 +68,11 @@ export const parseBracketLink = (bracketLink, titleToUrlFn = titleToUrl) => {
     const [, link, heading, text] = match;
     const href = titleToUrlFn(link);
 
-    if (heading && text) {
-        return { href: `${href}#${slugify(heading, { lower: true })}`, title: text };
-    }
-
-    if (heading) {
-        return { href: `${href}#${slugify(heading, { lower: true })}`, title: link };
-    }
-
-    if (text) {
-        return { href, title: text };
-    }
-
-    return { href, title: link };
+    return {
+        href: heading ? `${href}#${slugify(heading, { lower: true })}` : href,
+        title: text || (heading ? link : link),
+        slug: href.replace(/\//g, ''),
+    };
 };
 
 export default { extractFrontmatter, titleToUrl, removeIgnoreParts, addPaywall, fetchEmbedContent, parseBracketLink };
