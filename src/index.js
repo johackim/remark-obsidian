@@ -112,6 +112,6 @@ const plugin = (options = {}) => (tree) => {
     });
 };
 
-export { parseBracketLink } from './utils';
+export { parseBracketLink, extractBracketLinks } from './utils';
 
 export default plugin;

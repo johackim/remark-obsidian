@@ -75,4 +75,17 @@ export const parseBracketLink = (bracketLink, titleToUrlFn = titleToUrl) => {
     };
 };
 
-export default { extractFrontmatter, titleToUrl, removeIgnoreParts, addPaywall, fetchEmbedContent, parseBracketLink };
+export const extractBracketLinks = (content) => {
+    const links = content.match(BRACKET_LINK_REGEX) || [];
+    return links.map((link) => parseBracketLink(link));
+};
+
+export default {
+    extractFrontmatter,
+    extractBracketLinks,
+    parseBracketLink,
+    fetchEmbedContent,
+    removeIgnoreParts,
+    titleToUrl,
+    addPaywall,
+};
