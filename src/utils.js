@@ -75,9 +75,9 @@ export const parseBracketLink = (bracketLink, titleToUrlFn = titleToUrl) => {
     };
 };
 
-export const extractBracketLinks = (content) => {
+export const extractBracketLinks = (content, titleToUrlFn = titleToUrl) => {
     const links = content.match(BRACKET_LINK_REGEX) || [];
-    return links.map((link) => parseBracketLink(link));
+    return links.map((link) => parseBracketLink(link, titleToUrlFn));
 };
 
 export default {
