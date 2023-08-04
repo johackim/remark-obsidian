@@ -1,106 +1,23 @@
-import fs from 'fs';
+import { remark } from 'remark';
+import { unified } from 'unified';
 import { visit } from 'unist-util-visit';
 import { toString } from 'mdast-util-to-string';
-import remarkFrontmatter from 'remark-frontmatter';
-import remarkParse from 'remark-parse';
-import remarkHtml from 'remark-html';
-import { unified } from 'unified';
 import { toMarkdown } from 'mdast-util-to-markdown';
 import { gfmFootnoteToMarkdown } from 'mdast-util-gfm-footnote';
 import { gfmStrikethroughToMarkdown } from 'mdast-util-gfm-strikethrough';
+import remarkFrontmatter from 'remark-frontmatter';
+import remarkParse from 'remark-parse';
+import remarkHtml from 'remark-html';
 import remarkGfm from 'remark-gfm';
 import slugify from 'slugify';
-import { remark } from 'remark';
-import { parse } from 'yaml';
-
-const BRACKET_LINK_REGEX = /\[\[([a-zA-ZÀ-ÿ0-9-'?%.():&,+/€! ]+)#?([a-zA-ZÀ-ÿ0-9-'?%.():&,+/€! ]+)?\|?([a-zA-ZÀ-ÿ0-9-'?%.():&,+/€! ]+)?\]\]/g;
-const EMBED_LINK_REGEX = /!\[\[([a-zA-ZÀ-ÿ0-9-'?%.():&,+/€! ]+)\]\]/g;
-
-const extractFrontmatter = (markdown) => {
-    const frontmatter = markdown.match(/^---([\s\S]+?)---/);
-
-    if (!frontmatter) return {};
-
-    const [, frontmatterString] = frontmatter;
-
-    return parse(frontmatterString);
-};
-
-const defaultTitleToURL = (title, folder) => {
-    const path = `${folder}/${title}.md`;
-
-    if (fs.existsSync(path)) {
-        const markdown = fs.readFileSync(path, 'utf8');
-        const { slug } = extractFrontmatter(markdown);
-
-        return `/${slug}`;
-    }
-
-    return `/${slugify(title, { lower: true })}`;
-};
-
-const removeIgnoreParts = (tree) => {
-    const start = tree.children.findIndex(({ commentValue }) => commentValue?.trim() === 'ignore');
-    const end = tree.children.findIndex(({ commentValue }) => commentValue?.trim() === 'end ignore');
-
-    if (start === -1) return;
-
-    const elementsToDelete = (end === -1 ? tree.children.length : end) - start + 1;
-    tree.children.splice(start, elementsToDelete);
-
-    removeIgnoreParts(tree);
-};
-
-const addPaywall = (tree, paywall) => {
-    if (!paywall) return;
-
-    const start = tree.children.findIndex(({ commentValue }) => commentValue?.trim() === 'private');
-    const end = tree.children.findIndex(({ commentValue }) => commentValue?.trim() === 'end private');
-
-    if (start === -1) return;
-
-    const elementsToReplace = (end === -1 ? tree.children.length : end) - start + 1;
-    tree.children.splice(start, elementsToReplace, { type: 'html', value: paywall });
-
-    addPaywall(tree);
-};
-
-const defaultFetchEmbedContent = (fileName, options) => {
-    const filePath = `${options.markdownFolder}/${fileName}.md`;
-
-    if (!fs.existsSync(filePath)) return null;
-
-    return fs.readFileSync(filePath, 'utf8');
-};
-
-export const parseBracketLink = (bracketLink, titleToUrl = defaultTitleToURL) => {
-    const [match] = bracketLink.matchAll(BRACKET_LINK_REGEX);
-
-    if (!match) return bracketLink;
-
-    const [, link, heading, text] = match;
-    const href = titleToUrl(link);
-
-    if (heading && text) {
-        return { href: `${href}#${slugify(heading, { lower: true })}`, title: text };
-    }
-
-    if (heading) {
-        return { href: `${href}#${slugify(heading, { lower: true })}`, title: link };
-    }
-
-    if (text) {
-        return { href, title: text };
-    }
-
-    return { href, title: link };
-};
+import { EMBED_LINK_REGEX, BRACKET_LINK_REGEX } from './constants';
+import { removeIgnoreParts, addPaywall, titleToUrl, fetchEmbedContent } from './utils';
 
 const plugin = (options = {}) => (tree) => {
     const {
         markdownFolder = `${process.cwd()}/content`,
-        titleToUrl = defaultTitleToURL,
-        fetchEmbedContent = defaultFetchEmbedContent,
+        titleToUrlFn = titleToUrl,
+        fetchEmbedContentFn = fetchEmbedContent,
         paywall = '<p>Paywall</p>',
     } = options;
 
@@ -118,7 +35,7 @@ const plugin = (options = {}) => (tree) => {
                 return node;
             }
 
-            const content = fetchEmbedContent(fileName, options);
+            const content = fetchEmbedContentFn(fileName, options);
 
             if (!content) return node;
 
@@ -135,7 +52,7 @@ const plugin = (options = {}) => (tree) => {
             const html = paragraph.replace(
                 BRACKET_LINK_REGEX,
                 (bracketLink, link, heading, text) => {
-                    const href = titleToUrl(link, markdownFolder);
+                    const href = titleToUrlFn(link, markdownFolder);
 
                     if (node.children.some(({ value, type }) => value === bracketLink && type === 'inlineCode')) {
                         return bracketLink;
@@ -194,5 +111,7 @@ const plugin = (options = {}) => (tree) => {
         return node;
     });
 };
+
+export { parseBracketLink } from './utils';
 
 export default plugin;

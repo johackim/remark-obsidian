@@ -2,7 +2,8 @@ import fs from 'fs';
 import { remark } from 'remark';
 import remarkHtml from 'remark-html';
 import remarkComment from 'remark-comment';
-import plugin, { parseBracketLink } from '../src/index';
+import plugin from '../src/index';
+import { parseBracketLink } from '../src/utils';
 
 test('Should support ==highlight text==', async () => {
     const text = '==highlight text==';
