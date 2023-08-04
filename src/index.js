@@ -11,13 +11,13 @@ import remarkHtml from 'remark-html';
 import remarkGfm from 'remark-gfm';
 import slugify from 'slugify';
 import { EMBED_LINK_REGEX, BRACKET_LINK_REGEX } from './constants';
-import { removeIgnoreParts, addPaywall, titleToUrl, fetchEmbedContent } from './utils';
+import { removeIgnoreParts, addPaywall, titleToUrl as titleToUrlFn, fetchEmbedContent as fetchEmbedContentFn } from './utils';
 
 const plugin = (options = {}) => (tree) => {
     const {
         markdownFolder = `${process.cwd()}/content`,
-        titleToUrlFn = titleToUrl,
-        fetchEmbedContentFn = fetchEmbedContent,
+        titleToUrl = titleToUrlFn,
+        fetchEmbedContent = fetchEmbedContentFn,
         paywall = '<p>Paywall</p>',
     } = options;
 
@@ -35,7 +35,7 @@ const plugin = (options = {}) => (tree) => {
                 return node;
             }
 
-            const content = fetchEmbedContentFn(fileName, options);
+            const content = fetchEmbedContent(fileName, options);
 
             if (!content) return node;
 
@@ -52,7 +52,7 @@ const plugin = (options = {}) => (tree) => {
             const html = paragraph.replace(
                 BRACKET_LINK_REGEX,
                 (bracketLink, link, heading, text) => {
-                    const href = titleToUrlFn(link, markdownFolder);
+                    const href = titleToUrl(link, markdownFolder);
 
                     if (node.children.some(({ value, type }) => value === bracketLink && type === 'inlineCode')) {
                         return bracketLink;
