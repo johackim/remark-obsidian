@@ -1,7 +1,7 @@
 import fs from 'fs';
 import { parse } from 'yaml';
 import slugify from 'slugify';
-import { BRACKET_LINK_REGEX } from './constants';
+import { CODE_BLOCK_REGEX, BRACKET_LINK_REGEX } from './constants';
 
 export const extractFrontmatter = (markdown) => {
     const frontmatter = markdown.match(/^---([\s\S]+?)---/);
@@ -76,7 +76,7 @@ export const parseBracketLink = (bracketLink, titleToUrlFn = titleToUrl) => {
 };
 
 export const extractBracketLinks = (content, titleToUrlFn = titleToUrl) => {
-    const links = content.match(BRACKET_LINK_REGEX) || [];
+    const links = content.replace(CODE_BLOCK_REGEX, '').match(BRACKET_LINK_REGEX) || [];
     return links.map((link) => parseBracketLink(link, titleToUrlFn));
 };
 
