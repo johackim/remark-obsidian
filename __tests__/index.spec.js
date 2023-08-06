@@ -7,6 +7,7 @@ import { parseBracketLink } from '../src/utils';
 
 test('Should support ==highlight text==', async () => {
     const text = '==highlight text==';
+
     const output = String(await remark().use(plugin).process(text));
 
     expect(output).toContain('<p><mark>highlight text</mark></p>');
@@ -14,6 +15,7 @@ test('Should support ==highlight text==', async () => {
 
 test('Should support ==**highlight text**==', async () => {
     const text = '==**highlight text**==';
+
     const output = String(await remark().use(plugin).process(text));
 
     expect(output).toContain('<p><mark><b>highlight text</b></mark></p>');
@@ -21,6 +23,7 @@ test('Should support ==**highlight text**==', async () => {
 
 test('Should support [[Internal link]]', async () => {
     const text = '[[Internal link]]';
+
     const output = String(await remark().use(plugin).process(text));
 
     expect(output).toContain('<a href="/internal-link" title="Internal link">Internal link</a>');
@@ -28,6 +31,7 @@ test('Should support [[Internal link]]', async () => {
 
 test('Should support **markdown text** with an [[Internal link]]', async () => {
     const text = '**markdown text** with [[Internal link]]';
+
     const output = String(await remark().use(plugin).process(text));
 
     expect(output).toContain('<a href="/internal-link" title="Internal link">Internal link</a>');
@@ -43,6 +47,7 @@ test('Should support [[Internal link]] with text around', async () => {
 
 test('Should support [[Internal link|With custom text]]', async () => {
     const text = '[[Internal link|With custom text]]';
+
     const output = String(await remark().use(plugin).process(text));
 
     expect(output).toContain('<a href="/internal-link" title="With custom text">With custom text</a>');
@@ -50,6 +55,7 @@ test('Should support [[Internal link|With custom text]]', async () => {
 
 test('Should support multiple [[Internal link]] on the same paragraph', async () => {
     const text = 'start [[Internal link]] [[Second link]] end';
+
     const output = String(await remark().use(plugin).process(text));
 
     expect(output).toContain('<a href="/internal-link" title="Internal link">Internal link</a>');
@@ -58,6 +64,7 @@ test('Should support multiple [[Internal link]] on the same paragraph', async ()
 
 test('Should support [[Internal link#heading]]', async () => {
     const text = '[[Internal link#heading]]';
+
     const output = String(await remark().use(plugin).process(text));
 
     expect(output).toContain('<a href="/internal-link#heading" title="Internal link">Internal link</a>');
@@ -65,6 +72,7 @@ test('Should support [[Internal link#heading]]', async () => {
 
 test('Should support [[Internal link#heading|With custom text]]', async () => {
     const text = '[[Internal link#heading|With custom text]]';
+
     const output = String(await remark().use(plugin).process(text));
 
     expect(output).toContain('<a href="/internal-link#heading" title="With custom text">With custom text</a>');
@@ -72,6 +80,7 @@ test('Should support [[Internal link#heading|With custom text]]', async () => {
 
 test('Should support french accents', async () => {
     const text = '[[Productivité]]';
+
     const output = String(await remark().use(plugin).process(text));
 
     expect(output).toContain('<a href="/productivite" title="Productivité">Productivité</a>');
@@ -79,8 +88,8 @@ test('Should support french accents', async () => {
 
 test('Should support ![[Embed note]]', async () => {
     const text = fs.readFileSync(`${process.cwd()}/__tests__/fixtures/Test.md`, 'utf8');
-
     const options = { markdownFolder: `${process.cwd()}/__tests__/fixtures` };
+
     const output = String(await remark().use(plugin, options).process(text));
 
     expect(output).toContain('Hello world');
@@ -92,6 +101,7 @@ test('Should support ![[Embed note]]', async () => {
 
 test('Should ignore embed links inside code blocks', async () => {
     const text = '`![[Embed Link]]`';
+
     const output = String(await remark().use(remarkHtml).use(plugin).process(text));
 
     expect(output).toContain('<code>![[Embed Link]]</code>');
@@ -99,6 +109,7 @@ test('Should ignore embed links inside code blocks', async () => {
 
 test('Should ignore bracket links inside code blocks', async () => {
     const text = '`[[Internal Link]]`';
+
     const output = String(await remark().use(remarkHtml).use(plugin).process(text));
 
     expect(output).toContain('<code>[[Internal Link]]</code>');
@@ -106,6 +117,7 @@ test('Should ignore bracket links inside code blocks', async () => {
 
 test('Should ignore highlights inside code blocks', async () => {
     const text = '`==Highlight==`';
+
     const output = String(await remark().use(remarkHtml).use(plugin).process(text));
 
     expect(output).toContain('<code>==Highlight==</code>');
@@ -113,6 +125,7 @@ test('Should ignore highlights inside code blocks', async () => {
 
 test('Should parse bracket link', () => {
     const bracketLink = '[[Bracket link]]';
+
     const data = parseBracketLink(bracketLink);
 
     expect(data).toEqual({ title: 'Bracket link', href: '/bracket-link', slug: 'bracket-link' });
@@ -176,6 +189,7 @@ test('Should display paywall after "<!-- private -->" HTML comment', async () =>
 
 test.skip('Should support ==highlight **bold text**==', async () => {
     const text = '==highlight **bold text**==';
+
     const output = String(await remark().use(plugin).process(text));
 
     expect(output).toContain('<p><mark>highlight <b>bold text</b></mark></p>');
