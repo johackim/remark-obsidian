@@ -10,7 +10,7 @@ import remarkParse from 'remark-parse';
 import remarkHtml from 'remark-html';
 import remarkGfm from 'remark-gfm';
 import slugify from 'slugify';
-import { EMBED_LINK_REGEX, BRACKET_LINK_REGEX } from './constants';
+import { EMBED_LINK_REGEX, BRACKET_LINK_REGEX, CALLOUT_REGEX, ICONS } from './constants';
 import { removeIgnoreParts, addPaywall, titleToUrl as titleToUrlFn, fetchEmbedContent as fetchEmbedContentFn } from './utils';
 
 const plugin = (options = {}) => (tree) => {
@@ -79,6 +79,37 @@ const plugin = (options = {}) => (tree) => {
             delete node.children; // eslint-disable-line
 
             return Object.assign(node, { type: 'html', value: html });
+        }
+
+        return node;
+    });
+
+    visit(tree, 'blockquote', (node, index, parent) => {
+        const blockquote = toString(node);
+
+        if (blockquote.match(CALLOUT_REGEX)) {
+            const [, type, title] = CALLOUT_REGEX.exec(blockquote);
+            const content = blockquote.replace(CALLOUT_REGEX, '').trim().replace(/\n/g, ' ');
+            const icon = ICONS[type.toLowerCase()];
+
+            const html = {
+                type: 'html',
+                value: `<blockquote class="callout ${type.toLowerCase()}">
+                    ${icon ? `
+                        <div class="callout-title">
+                            ${icon ? `<div class="callout-icon">${icon}</div>` : ''}
+                            <div class="callout-title-inner">${title || type.toLowerCase()}</div>
+                        </div>
+                    ` : ''}
+                    <div class="callout-content">
+                        <p>${content}</p>
+                    </div>
+                </blockquote>`,
+            };
+
+            parent.children.splice(index, 1, html);
+
+            return node;
         }
 
         return node;

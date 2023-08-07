@@ -187,6 +187,44 @@ test('Should display paywall after "<!-- private -->" HTML comment', async () =>
     expect(output).not.toContain('s3cr3t');
 });
 
+test('Should support > [!CALLOUT]', async () => {
+    const text = [
+        '> [!NOTE]',
+        '> This is a note',
+    ].join('\n');
+
+    const output = String(await remark().use(plugin).process(text));
+
+    expect(output).toContain('<blockquote class="callout note">');
+    expect(output).toContain('<p>This is a note</p>');
+});
+
+test('Should support > [!CALLOUT] with custom title', async () => {
+    const text = [
+        '> [!NOTE] Custom title',
+        '> This is a note',
+    ].join('\n');
+
+    const output = String(await remark().use(plugin).process(text));
+
+    expect(output).toContain('<blockquote class="callout note">');
+    expect(output).toContain('<div class="callout-title-inner">Custom title</div>');
+    expect(output).toContain('<p>This is a note</p>');
+});
+
+test('Should support > [!CALLOUT] with multiple lines', async () => {
+    const text = [
+        '> [!NOTE]',
+        '> This is a note',
+        '> with multiple lines',
+    ].join('\n');
+
+    const output = String(await remark().use(plugin).process(text));
+
+    expect(output).toContain('<blockquote class="callout note">');
+    expect(output).toContain('<p>This is a note with multiple lines</p>');
+});
+
 test.skip('Should support ==highlight **bold text**==', async () => {
     const text = '==highlight **bold text**==';
 
