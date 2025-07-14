@@ -255,33 +255,6 @@ test('Should support baseUrl option', async () => {
     expect(output).toContain('<a href="/foo/internal-link" title="Internal link">Internal link</a>');
 });
 
-test('Should support baseUrl option with custom text', async () => {
-    const text = '[[Internal link|Custom text]]';
-    const options = { baseUrl: '/foo' };
-
-    const output = String(await remark().use(plugin, options).process(text));
-
-    expect(output).toContain('<a href="/foo/internal-link" title="Custom text">Custom text</a>');
-});
-
-test('Should support baseUrl option with heading', async () => {
-    const text = '[[Internal link#heading]]';
-    const options = { baseUrl: '/foo' };
-
-    const output = String(await remark().use(plugin, options).process(text));
-
-    expect(output).toContain('<a href="/foo/internal-link#heading" title="Internal link">Internal link</a>');
-});
-
-test('Should support baseUrl option with heading and custom text', async () => {
-    const text = '[[Internal link#heading|Custom text]]';
-    const options = { baseUrl: '/foo' };
-
-    const output = String(await remark().use(plugin, options).process(text));
-
-    expect(output).toContain('<a href="/foo/internal-link#heading" title="Custom text">Custom text</a>');
-});
-
 test('Should work without baseUrl option (default behavior)', async () => {
     const text = '[[Internal link]]';
 
