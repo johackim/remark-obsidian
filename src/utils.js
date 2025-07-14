@@ -60,24 +60,25 @@ export const fetchEmbedContent = (fileName, options) => {
     return fs.readFileSync(filePath, 'utf8');
 };
 
-export const parseBracketLink = (bracketLink, titleToUrlFn = titleToUrl) => {
+export const parseBracketLink = (bracketLink, titleToUrlFn = titleToUrl, baseUrl = '') => {
     const [match] = bracketLink.matchAll(BRACKET_LINK_REGEX);
 
     if (!match) return bracketLink;
 
     const [, link, heading, text] = match;
     const href = titleToUrlFn(link);
+    const fullHref = baseUrl ? `${baseUrl}${href}` : href;
 
     return {
-        href: heading ? `${href}#${slugify(heading, { lower: true })}` : href,
+        href: heading ? `${fullHref}#${slugify(heading, { lower: true })}` : fullHref,
         title: text || (heading ? link : link),
         slug: href.replace(/\//g, ''),
     };
 };
 
-export const extractBracketLinks = (content, titleToUrlFn = titleToUrl) => {
+export const extractBracketLinks = (content, titleToUrlFn = titleToUrl, baseUrl = '') => {
     const links = content.replace(CODE_BLOCK_REGEX, '').match(BRACKET_LINK_REGEX) || [];
-    return links.map((link) => parseBracketLink(link, titleToUrlFn));
+    return links.map((link) => parseBracketLink(link, titleToUrlFn, baseUrl));
 };
 
 export default {

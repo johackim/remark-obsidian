@@ -142,6 +142,15 @@ test('Should parse multiple bracket links', () => {
     ]);
 });
 
+test('Should parse bracket link with baseUrl', () => {
+    const bracketLink = '[[Bracket link]]';
+    const baseUrl = '/foo';
+
+    const data = parseBracketLink(bracketLink, undefined, baseUrl);
+
+    expect(data).toEqual({ title: 'Bracket link', href: '/foo/bracket-link', slug: 'bracket-link' });
+});
+
 test('Should ignore content between "<!--ignore-->" and "<!--end ignore-->" HTML comments', async () => {
     const text = [
         'Hello world',
@@ -235,4 +244,48 @@ test.skip('Should support ==highlight **bold text**==', async () => {
 
 test.skip('Should support ![[Embed note#heading]]', async () => {
     // TODO
+});
+
+test('Should support baseUrl option', async () => {
+    const text = '[[Internal link]]';
+    const options = { baseUrl: '/foo' };
+
+    const output = String(await remark().use(plugin, options).process(text));
+
+    expect(output).toContain('<a href="/foo/internal-link" title="Internal link">Internal link</a>');
+});
+
+test('Should support baseUrl option with custom text', async () => {
+    const text = '[[Internal link|Custom text]]';
+    const options = { baseUrl: '/foo' };
+
+    const output = String(await remark().use(plugin, options).process(text));
+
+    expect(output).toContain('<a href="/foo/internal-link" title="Custom text">Custom text</a>');
+});
+
+test('Should support baseUrl option with heading', async () => {
+    const text = '[[Internal link#heading]]';
+    const options = { baseUrl: '/foo' };
+
+    const output = String(await remark().use(plugin, options).process(text));
+
+    expect(output).toContain('<a href="/foo/internal-link#heading" title="Internal link">Internal link</a>');
+});
+
+test('Should support baseUrl option with heading and custom text', async () => {
+    const text = '[[Internal link#heading|Custom text]]';
+    const options = { baseUrl: '/foo' };
+
+    const output = String(await remark().use(plugin, options).process(text));
+
+    expect(output).toContain('<a href="/foo/internal-link#heading" title="Custom text">Custom text</a>');
+});
+
+test('Should work without baseUrl option (default behavior)', async () => {
+    const text = '[[Internal link]]';
+
+    const output = String(await remark().use(plugin).process(text));
+
+    expect(output).toContain('<a href="/internal-link" title="Internal link">Internal link</a>');
 });

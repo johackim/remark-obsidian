@@ -19,6 +19,7 @@ const plugin = (options = {}) => (tree) => {
         titleToUrl = titleToUrlFn,
         fetchEmbedContent = fetchEmbedContentFn,
         paywall = '<p>Paywall</p>',
+        baseUrl = '',
     } = options;
 
     removeIgnoreParts(tree);
@@ -53,24 +54,25 @@ const plugin = (options = {}) => (tree) => {
                 BRACKET_LINK_REGEX,
                 (bracketLink, link, heading, text) => {
                     const href = titleToUrl(link, markdownFolder);
+                    const fullHref = baseUrl ? `${baseUrl}${href}` : href;
 
                     if (node.children.some(({ value, type }) => value === bracketLink && type === 'inlineCode')) {
                         return bracketLink;
                     }
 
                     if (heading && text) {
-                        return `<a href="${href}#${slugify(heading, { lower: true })}" title="${text}">${text}</a>`;
+                        return `<a href="${fullHref}#${slugify(heading, { lower: true })}" title="${text}">${text}</a>`;
                     }
 
                     if (heading) {
-                        return `<a href="${href}#${slugify(heading, { lower: true })}" title="${link}">${link}</a>`;
+                        return `<a href="${fullHref}#${slugify(heading, { lower: true })}" title="${link}">${link}</a>`;
                     }
 
                     if (text) {
-                        return `<a href="${href}" title="${text}">${text}</a>`;
+                        return `<a href="${fullHref}" title="${text}">${text}</a>`;
                     }
 
-                    return `<a href="${href}" title="${link}">${link}</a>`;
+                    return `<a href="${fullHref}" title="${link}">${link}</a>`;
                 },
             );
 

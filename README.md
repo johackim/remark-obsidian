@@ -57,6 +57,32 @@ const { value } = unified()
 console.log(value); // <a href="/hello-world">Hello world</a>
 ```
 
+## Options
+
+You can configure the plugin with options:
+
+```js
+import { remark } from 'remark';
+import remarkObsidian from 'remark-obsidian';
+
+const options = {
+    markdownFolder: './content', // Default: `${process.cwd()}/content`
+    baseUrl: '/docs', // Default: '' (empty string)
+    // ... other options
+};
+
+const html = String(await remark().use(remarkObsidian, options).process('[[Hello world]]'));
+console.log(html); // <a href="/docs/hello-world">Hello world</a>
+```
+
+### Available Options
+
+- `markdownFolder` (string): Path to the markdown files directory. Default: `${process.cwd()}/content`
+- `baseUrl` (string): Base URL to prepend to internal links. Default: `''` (empty string)
+- `titleToUrl` (function): Custom function to convert titles to URLs
+- `fetchEmbedContent` (function): Custom function to fetch embedded content
+- `paywall` (string): HTML content to display for private content. Default: `'<p>Paywall</p>'`
+
 ## Running the tests
 
 ```bash
