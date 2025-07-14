@@ -67,7 +67,7 @@ export const parseBracketLink = (bracketLink, titleToUrlFn = titleToUrl, baseUrl
 
     const [, link, heading, text] = match;
     const href = titleToUrlFn(link);
-    const fullHref = baseUrl ? `${baseUrl}${href}` : href;
+    const fullHref = baseUrl+href;
 
     return {
         href: heading ? `${fullHref}#${slugify(heading, { lower: true })}` : fullHref,
