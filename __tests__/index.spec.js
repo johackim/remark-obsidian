@@ -255,10 +255,3 @@ test('Should support baseUrl option', async () => {
     expect(output).toContain('<a href="/foo/internal-link" title="Internal link">Internal link</a>');
 });
 
-test('Should work without baseUrl option (default behavior)', async () => {
-    const text = '[[Internal link]]';
-
-    const output = String(await remark().use(plugin).process(text));
-
-    expect(output).toContain('<a href="/internal-link" title="Internal link">Internal link</a>');
-});

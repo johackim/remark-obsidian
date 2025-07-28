@@ -137,6 +137,3 @@ dist
 
 # SvelteKit build / generate output
 .svelte-kit
-
-# package lock files
-package-lock.json

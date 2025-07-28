@@ -49,12 +49,12 @@ import rehypeStringify from 'rehype-stringify';
 
 const { value } = unified()
     .use(remarkParse)
-    .use(remarkObsidian, { baseUrl: '/docs' })
+    .use(remarkObsidian)
     .use(remarkRehype, { allowDangerousHtml: true })
     .use(rehypeStringify, { allowDangerousHtml: true })
     .processSync('[[Hello world]]');
 
-console.log(value); // <a href="/docs/hello-world">Hello world</a>
+console.log(value); // <a href="/hello-world">Hello world</a>
 ```
 
 ### Available Options
