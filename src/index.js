@@ -54,7 +54,7 @@ const plugin = (options = {}) => (tree) => {
                 BRACKET_LINK_REGEX,
                 (bracketLink, link, heading, text) => {
                     const href = titleToUrl(link, markdownFolder);
-                    const fullHref = baseUrl+href;
+                    const fullHref = baseUrl + href;
 
                     if (node.children.some(({ value, type }) => value === bracketLink && type === 'inlineCode')) {
                         return bracketLink;
