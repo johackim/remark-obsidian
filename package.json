@@ -28,7 +28,7 @@
   "description": "Remark plugin to support Obsidian markdown syntax",
   "repository": {
     "type": "git",
-    "url": "git@github.com:johackim/remark-obsidian.git"
+    "url": "git+ssh://git@github.com/johackim/remark-obsidian.git"
   },
   "keywords": [
     "remark",
