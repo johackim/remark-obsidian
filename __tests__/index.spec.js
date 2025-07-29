@@ -254,3 +254,11 @@ test('Should support baseUrl option', async () => {
 
     expect(output).toContain('<a href="/foo/internal-link" title="Internal link">Internal link</a>');
 });
+
+test('Should support [[#Heading]]', async () => {
+    const text = '[[#Heading]]';
+
+    const output = String(await remark().use(plugin).process(text));
+
+    expect(output).toContain('<a href="#heading" title="Heading">Heading</a>');
+});

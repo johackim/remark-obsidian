@@ -10,7 +10,7 @@ import remarkParse from 'remark-parse';
 import remarkHtml from 'remark-html';
 import remarkGfm from 'remark-gfm';
 import slugify from 'slugify';
-import { EMBED_LINK_REGEX, BRACKET_LINK_REGEX, CALLOUT_REGEX, ICONS } from './constants';
+import { EMBED_LINK_REGEX, BRACKET_LINK_REGEX, CALLOUT_REGEX, HEADING_REGEX, ICONS } from './constants';
 import { removeIgnoreParts, addPaywall, titleToUrl as titleToUrlFn, fetchEmbedContent as fetchEmbedContentFn } from './utils';
 
 const plugin = (options = {}) => (tree) => {
@@ -86,6 +86,17 @@ const plugin = (options = {}) => (tree) => {
             delete node.children; // eslint-disable-line
 
             return Object.assign(node, { type: 'html', value: html });
+        }
+
+        if (paragraph.match(HEADING_REGEX)) {
+            const match = HEADING_REGEX.exec(paragraph);
+
+            if (match && match[1]) {
+                const heading = match[1];
+                const html = `<a href="#${slugify(heading, { remove: /[.,]/g, lower: true })}" title="${heading}">${heading}</a>`;
+                delete node.children; // eslint-disable-line
+                return Object.assign(node, { type: 'html', value: html });
+            }
         }
 
         return node;
