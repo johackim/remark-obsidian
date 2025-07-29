@@ -142,6 +142,15 @@ test('Should parse multiple bracket links', () => {
     ]);
 });
 
+test('Should parse bracket link with baseUrl', () => {
+    const bracketLink = '[[Bracket link]]';
+    const baseUrl = '/foo';
+
+    const data = parseBracketLink(bracketLink, undefined, baseUrl);
+
+    expect(data).toEqual({ title: 'Bracket link', href: '/foo/bracket-link', slug: 'bracket-link' });
+});
+
 test('Should ignore content between "<!--ignore-->" and "<!--end ignore-->" HTML comments', async () => {
     const text = [
         'Hello world',
@@ -236,3 +245,13 @@ test.skip('Should support ==highlight **bold text**==', async () => {
 test.skip('Should support ![[Embed note#heading]]', async () => {
     // TODO
 });
+
+test('Should support baseUrl option', async () => {
+    const text = '[[Internal link]]';
+    const options = { baseUrl: '/foo' };
+
+    const output = String(await remark().use(plugin, options).process(text));
+
+    expect(output).toContain('<a href="/foo/internal-link" title="Internal link">Internal link</a>');
+});
+

@@ -57,6 +57,10 @@ const { value } = unified()
 console.log(value); // <a href="/hello-world">Hello world</a>
 ```
 
+### Available Options
+
+- `baseUrl` (string): Base URL to prepend to internal links. Default: `''` (empty string)
+
 ## Running the tests
 
 ```bash
