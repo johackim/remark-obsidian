@@ -25,7 +25,12 @@ const plugin = (options = {}) => (tree) => {
     removeIgnoreParts(tree);
     addPaywall(tree, paywall);
 
+    // eslint-disable-next-line complexity
     visit(tree, 'paragraph', (node, index, parent) => {
+        if (node.children && node.children.some((child) => child.type === 'inlineMath' || child.type === 'math')) {
+            return node;
+        }
+
         const markdown = toMarkdown(node, { extensions: [gfmFootnoteToMarkdown(), gfmStrikethroughToMarkdown] });
         const paragraph = String(unified().use(remarkParse).use(remarkHtml).processSync(markdown));
 
