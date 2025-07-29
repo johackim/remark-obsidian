@@ -254,4 +254,3 @@ test('Should support baseUrl option', async () => {
 
     expect(output).toContain('<a href="/foo/internal-link" title="Internal link">Internal link</a>');
 });
-

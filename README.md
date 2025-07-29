@@ -41,7 +41,7 @@ console.log(html); // <a href="/hello-world">Hello world</a>
 With [unified](https://github.com/unifiedjs/unified) :
 
 ```js
-import { unified } from 'unified'
+import { unified } from 'unified';
 import remarkObsidian from 'remark-obsidian';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
