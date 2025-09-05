@@ -3,87 +3,100 @@ import { unified } from 'unified';
 import { visit } from 'unist-util-visit';
 import { toString } from 'mdast-util-to-string';
 import { toMarkdown } from 'mdast-util-to-markdown';
-import { gfmFootnoteToMarkdown } from 'mdast-util-gfm-footnote';
-import { gfmStrikethroughToMarkdown } from 'mdast-util-gfm-strikethrough';
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkParse from 'remark-parse';
 import remarkHtml from 'remark-html';
 import remarkGfm from 'remark-gfm';
 import slugify from 'slugify';
-import { EMBED_LINK_REGEX, BRACKET_LINK_REGEX, CALLOUT_REGEX, HEADING_REGEX, ICONS } from './constants';
-import { removeIgnoreParts, addPaywall, titleToUrl as titleToUrlFn, fetchEmbedContent as fetchEmbedContentFn } from './utils';
+import { gfmFootnoteToMarkdown } from 'mdast-util-gfm-footnote';
+import { gfmStrikethroughToMarkdown } from 'mdast-util-gfm-strikethrough';
+import { BRACKET_LINK_REGEX, CALLOUT_REGEX, HEADING_REGEX, ICONS, EMBED_LINK_REGEX } from './constants';
+import { removeIgnoreParts, addPaywall } from './utils';
 
-const plugin = (options = {}) => (tree) => {
+const plugin = (options) => (tree) => {
     const {
-        markdownFolder = `${process.cwd()}/content`,
-        titleToUrl = titleToUrlFn,
-        fetchEmbedContent = fetchEmbedContentFn,
-        paywall = '<p>Paywall</p>',
         baseUrl = '',
-    } = options;
+        markdownFiles,
+        paywall = '<p>Paywall</p>',
+    } = options || {};
+
+    const titleToUrl = (title) => {
+        const file = markdownFiles && markdownFiles.find((f) => f.file === `${title}.md`);
+
+        if (file && file.permalink) {
+            return `/${file.permalink}`;
+        }
+
+        return `/${slugify(title, { lower: true })}`;
+    };
 
     removeIgnoreParts(tree);
     addPaywall(tree, paywall);
 
     // eslint-disable-next-line complexity
-    visit(tree, 'paragraph', (node, index, parent) => {
-        if (node.children && node.children.some((child) => child.type === 'inlineMath' || child.type === 'math')) {
-            return node;
-        }
-
+    visit(tree, 'paragraph', (node) => {
         const markdown = toMarkdown(node, { extensions: [gfmFootnoteToMarkdown(), gfmStrikethroughToMarkdown] });
         const paragraph = String(unified().use(remarkParse).use(remarkHtml).processSync(markdown));
 
         if (paragraph.match(EMBED_LINK_REGEX)) {
-            const [, fileName] = EMBED_LINK_REGEX.exec(paragraph);
+            const html = paragraph.replace(
+                EMBED_LINK_REGEX,
+                (embedLink, link) => {
+                    if (node.children.some(({ value, type }) => value === embedLink && type === 'inlineCode')) {
+                        return embedLink;
+                    }
 
-            if (node.children.some(({ type }) => type === 'inlineCode')) {
-                return node;
-            }
+                    const file = markdownFiles && markdownFiles.find((f) => f.file === `${link}.md`);
 
-            const content = fetchEmbedContent(fileName, options);
+                    if (file?.content) {
+                        const content = remark().use(remarkFrontmatter).use(remarkGfm).use(remarkHtml)
+                            .processSync(file.content);
+                        return `<div class="embed-note">${content}</div>`;
+                    }
 
-            if (!content) return node;
+                    return '<div class="embed-note not-found">Note not found</div>';
+                },
+            );
 
-            const embedTree = remark().use(remarkFrontmatter).use(remarkGfm).parse(content);
+            if (html === paragraph) return node;
 
-            plugin(options)(embedTree);
+            delete node.children; // eslint-disable-line no-param-reassign
 
-            parent.children.splice(index, 1, embedTree);
-
-            return node;
+            return Object.assign(node, { type: 'html', value: html });
         }
 
         if (paragraph.match(BRACKET_LINK_REGEX)) {
             const html = paragraph.replace(
                 BRACKET_LINK_REGEX,
+                // eslint-disable-next-line complexity
                 (bracketLink, link, heading, text) => {
-                    const href = titleToUrl(link, markdownFolder);
+                    const href = titleToUrl(link);
                     const fullHref = baseUrl + href;
+                    const isNotFound = markdownFiles && !markdownFiles.find((f) => f.file === `${link}.md`);
 
                     if (node.children.some(({ value, type }) => value === bracketLink && type === 'inlineCode')) {
                         return bracketLink;
                     }
 
                     if (heading && text) {
-                        return `<a href="${fullHref}#${slugify(heading, { lower: true })}" title="${text}">${text}</a>`;
+                        return `<a href="${fullHref}#${slugify(heading, { lower: true })}" title="${text}"${isNotFound ? ' class="not-found"' : ''}>${text}</a>`;
                     }
 
                     if (heading) {
-                        return `<a href="${fullHref}#${slugify(heading, { lower: true })}" title="${link}">${link}</a>`;
+                        return `<a href="${fullHref}#${slugify(heading, { lower: true })}" title="${link}"${isNotFound ? ' class="not-found"' : ''}>${link}</a>`;
                     }
 
                     if (text) {
-                        return `<a href="${fullHref}" title="${text}">${text}</a>`;
+                        return `<a href="${fullHref}" title="${text}"${isNotFound ? ' class="not-found"' : ''}>${text}</a>`;
                     }
 
-                    return `<a href="${fullHref}" title="${link}">${link}</a>`;
+                    return `<a href="${fullHref}" title="${link}"${isNotFound ? ' class="not-found"' : ''}>${link}</a>`;
                 },
             );
 
             if (html === paragraph) return node;
 
-            delete node.children; // eslint-disable-line
+            delete node.children; // eslint-disable-line no-param-reassign
 
             return Object.assign(node, { type: 'html', value: html });
         }
@@ -94,7 +107,7 @@ const plugin = (options = {}) => (tree) => {
             if (match && match[1]) {
                 const heading = match[1];
                 const html = `<a href="#${slugify(heading, { remove: /[.,]/g, lower: true })}" title="${heading}">${heading}</a>`;
-                delete node.children; // eslint-disable-line
+                delete node.children; // eslint-disable-line no-param-reassign
                 return Object.assign(node, { type: 'html', value: html });
             }
         }
@@ -113,7 +126,7 @@ const plugin = (options = {}) => (tree) => {
             const html = {
                 type: 'html',
                 value: `<blockquote class="callout ${type.toLowerCase()}">
-                    ${icon ? `
+                    ${(icon || title) ? `
                         <div class="callout-title">
                             ${icon ? `<div class="callout-icon">${icon}</div>` : ''}
                             <div class="callout-title-inner">${title || type.toLowerCase()}</div>
@@ -152,7 +165,7 @@ const plugin = (options = {}) => (tree) => {
 
             if (html === paragraph) return node;
 
-            delete node.children; // eslint-disable-line
+            delete node.children; // eslint-disable-line no-param-reassign
 
             return Object.assign(node, { type: 'html', value: `<p>${html}</p>` });
         }
@@ -160,7 +173,5 @@ const plugin = (options = {}) => (tree) => {
         return node;
     });
 };
-
-export { parseBracketLink, extractBracketLinks } from './utils';
 
 export default plugin;

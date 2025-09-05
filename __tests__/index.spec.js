@@ -1,9 +1,7 @@
-import fs from 'fs';
 import { remark } from 'remark';
 import remarkHtml from 'remark-html';
 import remarkComment from 'remark-comment';
 import plugin from '../src/index';
-import { parseBracketLink } from '../src/utils';
 
 test('Should support ==highlight text==', async () => {
     const text = '==highlight text==';
@@ -29,13 +27,13 @@ test('Should support [[Internal link]]', async () => {
     expect(output).toContain('<a href="/internal-link" title="Internal link">Internal link</a>');
 });
 
-test('Should support **markdown text** with an [[Internal link]]', async () => {
-    const text = '**markdown text** with [[Internal link]]';
+test('Should support **bold text** with an [[Internal link]]', async () => {
+    const text = '**bold text** with [[Internal link]]';
 
     const output = String(await remark().use(plugin).process(text));
 
     expect(output).toContain('<a href="/internal-link" title="Internal link">Internal link</a>');
-    expect(output).toContain('<strong>markdown text</strong>');
+    expect(output).toContain('<strong>bold text</strong>');
 });
 
 test('Should support [[Internal link]] with text around', async () => {
@@ -86,27 +84,6 @@ test('Should support french accents', async () => {
     expect(output).toContain('<a href="/productivite" title="Productivité">Productivité</a>');
 });
 
-test('Should support ![[Embed note]]', async () => {
-    const text = fs.readFileSync(`${process.cwd()}/__tests__/fixtures/Test.md`, 'utf8');
-    const options = { markdownFolder: `${process.cwd()}/__tests__/fixtures` };
-
-    const output = String(await remark().use(plugin, options).process(text));
-
-    expect(output).toContain('Hello world');
-    expect(output).toContain('<a href="/internal-link" title="Internal link">Internal link</a>');
-    expect(output).not.toContain('Embed note');
-    expect(output).not.toContain('!');
-    expect(output.trim().slice(-3)).toEqual('End');
-});
-
-test('Should ignore embed links inside code blocks', async () => {
-    const text = '`![[Embed Link]]`';
-
-    const output = String(await remark().use(remarkHtml).use(plugin).process(text));
-
-    expect(output).toContain('<code>![[Embed Link]]</code>');
-});
-
 test('Should ignore bracket links inside code blocks', async () => {
     const text = '`[[Internal Link]]`';
 
@@ -121,34 +98,6 @@ test('Should ignore highlights inside code blocks', async () => {
     const output = String(await remark().use(remarkHtml).use(plugin).process(text));
 
     expect(output).toContain('<code>==Highlight==</code>');
-});
-
-test('Should parse bracket link', () => {
-    const bracketLink = '[[Bracket link]]';
-
-    const data = parseBracketLink(bracketLink);
-
-    expect(data).toEqual({ title: 'Bracket link', href: '/bracket-link', slug: 'bracket-link' });
-});
-
-test('Should parse multiple bracket links', () => {
-    const bracketLinks = ['[[Bracket link]]', '[[Bracket link]]'];
-
-    const data = bracketLinks.map((bracketLink) => parseBracketLink(bracketLink));
-
-    expect(data).toEqual([
-        { title: 'Bracket link', href: '/bracket-link', slug: 'bracket-link' },
-        { title: 'Bracket link', href: '/bracket-link', slug: 'bracket-link' },
-    ]);
-});
-
-test('Should parse bracket link with baseUrl', () => {
-    const bracketLink = '[[Bracket link]]';
-    const baseUrl = '/foo';
-
-    const data = parseBracketLink(bracketLink, undefined, baseUrl);
-
-    expect(data).toEqual({ title: 'Bracket link', href: '/foo/bracket-link', slug: 'bracket-link' });
 });
 
 test('Should ignore content between "<!--ignore-->" and "<!--end ignore-->" HTML comments', async () => {
@@ -234,18 +183,6 @@ test('Should support > [!CALLOUT] with multiple lines', async () => {
     expect(output).toContain('<p>This is a note with multiple lines</p>');
 });
 
-test.skip('Should support ==highlight **bold text**==', async () => {
-    const text = '==highlight **bold text**==';
-
-    const output = String(await remark().use(plugin).process(text));
-
-    expect(output).toContain('<p><mark>highlight <b>bold text</b></mark></p>');
-});
-
-test.skip('Should support ![[Embed note#heading]]', async () => {
-    // TODO
-});
-
 test('Should support baseUrl option', async () => {
     const text = '[[Internal link]]';
     const options = { baseUrl: '/foo' };
@@ -261,4 +198,48 @@ test('Should support [[#Heading]]', async () => {
     const output = String(await remark().use(plugin).process(text));
 
     expect(output).toContain('<a href="#heading" title="Heading">Heading</a>');
+});
+
+test('Should resolve wikilinks using frontmatter permalink when markdownFiles list is provided', async () => {
+    const text = 'Go to [[myfile]]';
+    const options = { markdownFiles: [{ file: 'myfile.md', permalink: 'custom-link' }] };
+
+    const output = String(await remark().use(plugin, options).process(text));
+
+    expect(output).toContain('<a href="/custom-link" title="myfile">myfile</a>');
+});
+
+test('Should add not-found class to links that are not available on markdownFiles', async () => {
+    const text = '[[Internal link]]';
+    const options = { markdownFiles: [] };
+
+    const output = String(await remark().use(plugin, options).process(text));
+
+    expect(output).toContain('<a href="/internal-link" title="Internal link" class="not-found">Internal link</a>');
+});
+
+test('Should ignore embed links inside code blocks', async () => {
+    const text = '`![[Embed Link]]`';
+
+    const output = String(await remark().use(remarkHtml).use(plugin).process(text));
+
+    expect(output).toContain('<code>![[Embed Link]]</code>');
+});
+
+test('Should support ![[Embed note]]', async () => {
+    const text = '![[My Note]]';
+    const options = { markdownFiles: [{ file: 'My Note.md', content: 'This is a note with **bold** text.' }] };
+
+    const output = String(await remark().use(plugin, options).process(text));
+
+    expect(output).toContain('<div class="embed-note"><p>This is a note with <strong>bold</strong> text.</p>\n</div>');
+});
+
+test('Should add not-found class to embed links that are not available on markdownFiles', async () => {
+    const text = '![[Another Note]]';
+    const options = { markdownFiles: [] };
+
+    const output = String(await remark().use(plugin, options).process(text));
+
+    expect(output).toContain('<div class="embed-note not-found">Note not found</div>');
 });
