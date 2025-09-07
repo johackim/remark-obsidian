@@ -243,3 +243,11 @@ test('Should add not-found class to embed links that are not available on markdo
 
     expect(output).toContain('<div class="embed-note not-found">Note not found</div>');
 });
+
+test('Should support [[A & B]]', async () => {
+    const text = '[[A & B]]';
+
+    const output = String(await remark().use(plugin).process(text));
+
+    expect(output).toContain('<a href="/a-and-b" title="A & B">A & B</a>');
+});

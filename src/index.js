@@ -36,7 +36,7 @@ const plugin = (options) => (tree) => {
     // eslint-disable-next-line complexity
     visit(tree, 'paragraph', (node) => {
         const markdown = toMarkdown(node, { extensions: [gfmFootnoteToMarkdown(), gfmStrikethroughToMarkdown] });
-        const paragraph = String(unified().use(remarkParse).use(remarkHtml).processSync(markdown));
+        const paragraph = String(unified().use(remarkParse).use(remarkHtml).processSync(markdown)).replace(/&#x26;|&#38;/g, '&');
 
         if (paragraph.match(EMBED_LINK_REGEX)) {
             const html = paragraph.replace(
