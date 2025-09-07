@@ -1,6 +1,6 @@
 {
   "name": "remark-obsidian",
-  "version": "1.11.0",
+  "version": "1.11.1",
   "type": "module",
   "main": "dist/cjs/index.cjs",
   "module": "dist/esm/index.mjs",
