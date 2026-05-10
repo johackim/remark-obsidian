@@ -1,3 +1,5 @@
+export const ucFirst = (str) => str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+
 export const removeIgnoreParts = (tree) => {
     const start = tree.children.findIndex(({ commentValue }) => commentValue?.trim() === 'ignore');
     const end = tree.children.findIndex(({ commentValue }) => commentValue?.trim() === 'end ignore');

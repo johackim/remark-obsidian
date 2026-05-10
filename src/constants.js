@@ -4,7 +4,7 @@ export const EMBED_LINK_REGEX = /!\[\[([a-zA-ZÀ-ÿ0-9-'?%.():&,+/€! ]+)\]\]/g
 
 export const CODE_BLOCK_REGEX = /(```[\s\S]*?```)|(?:`[^`]*?`)/g;
 
-export const CALLOUT_REGEX = /\[!(?<type>[\w]+)\](?: (?<title>.+))?/g;
+export const CALLOUT_REGEX = /\\?\[!(?<type>\w+)\] ?(?<title>.+)?/;
 
 export const HEADING_REGEX = /\[\[#([a-zA-ZÀ-ÿ0-9-'?%.():&,+/€! ]+)\]\]/g;
 

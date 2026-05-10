@@ -11,7 +11,7 @@ import slugify from 'slugify';
 import { gfmFootnoteToMarkdown } from 'mdast-util-gfm-footnote';
 import { gfmStrikethroughToMarkdown } from 'mdast-util-gfm-strikethrough';
 import { BRACKET_LINK_REGEX, CALLOUT_REGEX, HEADING_REGEX, ICONS, EMBED_LINK_REGEX } from './constants';
-import { removeIgnoreParts, addPaywall } from './utils';
+import { removeIgnoreParts, addPaywall, ucFirst } from './utils';
 
 const plugin = (options) => (tree) => {
     const {
@@ -116,31 +116,26 @@ const plugin = (options) => (tree) => {
     });
 
     visit(tree, 'blockquote', (node, index, parent) => {
-        const blockquote = toString(node);
+        const markdown = toMarkdown(node).replace(/^> ?/gm, '').replace(/\n(?=[^\n*+\-\d])/g, '\n\n');
+        const match = CALLOUT_REGEX.exec(markdown);
 
-        if (blockquote.match(CALLOUT_REGEX)) {
-            const [, type, title] = CALLOUT_REGEX.exec(blockquote);
-            const content = blockquote.replace(CALLOUT_REGEX, '').trim().replace(/\n/g, ' ');
+        if (match) {
+            const [signal, type, title] = match;
             const icon = ICONS[type.toLowerCase()];
+            const content = String(remark().use(remarkGfm).use(remarkHtml).processSync(markdown.replace(signal, '').trim())).trim();
 
-            const html = {
+            parent.children.splice(index, 1, {
                 type: 'html',
                 value: `<blockquote class="callout ${type.toLowerCase()}">
                     ${(icon || title) ? `
                         <div class="callout-title">
                             ${icon ? `<div class="callout-icon">${icon}</div>` : ''}
-                            <div class="callout-title-inner">${title || type.toLowerCase()}</div>
+                            <div class="callout-title-inner">${title || ucFirst(type)}</div>
                         </div>
                     ` : ''}
-                    <div class="callout-content">
-                        <p>${content}</p>
-                    </div>
+                    <div class="callout-content">${content}</div>
                 </blockquote>`,
-            };
-
-            parent.children.splice(index, 1, html);
-
-            return node;
+            });
         }
 
         return node;

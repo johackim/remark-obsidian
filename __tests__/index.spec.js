@@ -170,17 +170,35 @@ test('Should support > [!CALLOUT] with custom title', async () => {
     expect(output).toContain('<p>This is a note</p>');
 });
 
-test('Should support > [!CALLOUT] with multiple lines', async () => {
+test('Should support > [!CALLOUT] with multiple paragraphs', async () => {
     const text = [
         '> [!NOTE]',
-        '> This is a note',
-        '> with multiple lines',
+        '> First paragraph.',
+        '> Second paragraph.',
     ].join('\n');
 
     const output = String(await remark().use(plugin).process(text));
 
     expect(output).toContain('<blockquote class="callout note">');
-    expect(output).toContain('<p>This is a note with multiple lines</p>');
+    expect(output).toContain('<p>First paragraph.</p>');
+    expect(output).toContain('<p>Second paragraph.</p>');
+});
+
+test('Should support markdown formatting inside callouts', async () => {
+    const text = [
+        '> [!NOTE]',
+        '> This is **bold** and *italic*.',
+        '>',
+        '> - item 1',
+        '> - item 2',
+    ].join('\n');
+
+    const output = String(await remark().use(plugin).process(text));
+
+    expect(output).toContain('<p>This is <strong>bold</strong> and <em>italic</em>.</p>');
+    expect(output).toContain('<ul>');
+    expect(output).toContain('<li>item 1</li>');
+    expect(output).toContain('<li>item 2</li>');
 });
 
 test('Should support baseUrl option', async () => {
