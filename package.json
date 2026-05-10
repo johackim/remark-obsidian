@@ -16,8 +16,7 @@
   },
   "scripts": {
     "test": "jest",
-    "deploy": "CI=true npx semantic-release",
-    "prepublishOnly": "npm run build",
+    "lint": "eslint .",
     "build": "rollup -c",
     "watch": "rollup -c -w"
   },
@@ -34,16 +33,12 @@
     "remark",
     "obsidian"
   ],
-  "publishConfig": {
-    "access": "public"
-  },
   "license": "GPL-3.0",
   "devDependencies": {
     "@babel/preset-env": "^7.22.9",
     "@rollup/plugin-babel": "^5.3.1",
     "@rollup/plugin-commonjs": "^22.0.2",
     "@rollup/plugin-node-resolve": "^13.3.0",
-    "@semantic-release/git": "^10.0.1",
     "eslint": "^8.46.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.28.0",
@@ -65,22 +60,5 @@
     "unified": "^10.1.2",
     "unist-util-visit": "^4.1.2",
     "yaml": "^2.3.1"
-  },
-  "release": {
-    "plugins": [
-      "@semantic-release/commit-analyzer",
-      "@semantic-release/release-notes-generator",
-      "@semantic-release/npm",
-      "@semantic-release/github",
-      [
-        "@semantic-release/git",
-        {
-          "assets": [
-            "package.json"
-          ],
-          "message": "chore(release): ${nextRelease.version}"
-        }
-      ]
-    ]
   }
 }
