@@ -116,7 +116,7 @@ const plugin = (options) => (tree) => {
     });
 
     visit(tree, 'blockquote', (node, index, parent) => {
-        const markdown = toMarkdown(node).replace(/^> ?/gm, '').replace(/\n(?=[^\n*+\-\d])/g, '\n\n');
+        const markdown = toMarkdown(node, { extensions: [gfmFootnoteToMarkdown(), gfmStrikethroughToMarkdown] }).replace(/^> ?/gm, '').replace(/\n(?=[^\n*+\-\d])/g, '\n\n');
         const match = CALLOUT_REGEX.exec(markdown);
 
         if (match) {
