@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.13.0](https://github.com/johackim/remark-obsidian/compare/v1.12.1...v1.13.0) (2026-09-28)
+
+
+### Features
+
+* add obsidianToMarkdow ([36e032c](https://github.com/johackim/remark-obsidian/commit/36e032c75f2bd529239d8c51c4c8f2454d156e9b))
+
 ## [1.12.1](https://github.com/johackim/remark-obsidian/compare/v1.12.0...v1.12.1) (2026-05-10)
 
 
