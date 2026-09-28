@@ -1,3 +1,5 @@
+import { visit } from 'unist-util-visit';
+
 export const ucFirst = (str) => str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 
 export const removeIgnoreParts = (tree) => {
@@ -25,3 +27,16 @@ export const addPaywall = (tree, paywall) => {
 
     addPaywall(tree);
 };
+
+export const removeFrontmatter = () => (tree) => {
+    Object.assign(tree, { children: tree.children.filter(({ type }) => type !== 'yaml') });
+};
+
+export const keepTaskCheckboxes = () => (tree) => visit(tree, 'listItem', (node) => {
+    const [firstChild] = node.children;
+
+    if (typeof node.checked !== 'boolean' || firstChild?.type !== 'html') return;
+
+    Object.assign(firstChild, { value: `[${node.checked ? 'x' : ' '}] ${firstChild.value}` });
+    Object.assign(node, { checked: null });
+});

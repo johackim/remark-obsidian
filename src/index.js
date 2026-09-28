@@ -4,6 +4,7 @@ import { visit } from 'unist-util-visit';
 import { toString } from 'mdast-util-to-string';
 import { toMarkdown } from 'mdast-util-to-markdown';
 import remarkFrontmatter from 'remark-frontmatter';
+import remarkComment from 'remark-comment';
 import remarkParse from 'remark-parse';
 import remarkHtml from 'remark-html';
 import remarkGfm from 'remark-gfm';
@@ -11,7 +12,7 @@ import slugify from 'slugify';
 import { gfmFootnoteToMarkdown } from 'mdast-util-gfm-footnote';
 import { gfmStrikethroughToMarkdown } from 'mdast-util-gfm-strikethrough';
 import { BRACKET_LINK_REGEX, CALLOUT_REGEX, HEADING_REGEX, ICONS, EMBED_LINK_REGEX } from './constants';
-import { removeIgnoreParts, addPaywall, ucFirst } from './utils';
+import { removeIgnoreParts, addPaywall, ucFirst, removeFrontmatter, keepTaskCheckboxes } from './utils';
 
 const plugin = (options) => (tree) => {
     const {
@@ -124,17 +125,11 @@ const plugin = (options) => (tree) => {
             const icon = ICONS[type.toLowerCase()];
             const content = String(remark().use(remarkGfm).use(remarkHtml).processSync(markdown.replace(signal, '').trim())).trim();
 
+            const calloutTitle = (icon || title) ? `<div class="callout-title">${icon ? `<div class="callout-icon">${icon}</div>` : ''}<div class="callout-title-inner">${title || ucFirst(type)}</div></div>` : '';
+
             parent.children.splice(index, 1, {
                 type: 'html',
-                value: `<blockquote class="callout ${type.toLowerCase()}">
-                    ${(icon || title) ? `
-                        <div class="callout-title">
-                            ${icon ? `<div class="callout-icon">${icon}</div>` : ''}
-                            <div class="callout-title-inner">${title || ucFirst(type)}</div>
-                        </div>
-                    ` : ''}
-                    <div class="callout-content">${content}</div>
-                </blockquote>`,
+                value: `<blockquote class="callout ${type.toLowerCase()}">${calloutTitle}<div class="callout-content">${content}</div></blockquote>`,
             });
         }
 
@@ -168,5 +163,14 @@ const plugin = (options) => (tree) => {
         return node;
     });
 };
+
+export const obsidianToMarkdown = (markdown, options) => String(remark()
+    .use(remarkFrontmatter)
+    .use(remarkComment, { ast: true })
+    .use(remarkGfm)
+    .use(plugin, options)
+    .use(removeFrontmatter)
+    .use(keepTaskCheckboxes)
+    .processSync(markdown));
 
 export default plugin;
