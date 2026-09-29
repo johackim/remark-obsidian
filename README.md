@@ -13,6 +13,7 @@ Remark plugin to support Obsidian markdown syntax.
 
 - [x] Support `> [!CALLOUT]`
 - [x] Support `==highlight text==`
+- [x] Support `~~strikethrough text~~`
 - [x] Support `[[Internal link]]`
 - [x] Support `[[Internal link|With custom text]]`
 - [x] Support `[[Internal link#heading]]`

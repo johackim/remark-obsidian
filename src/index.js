@@ -11,7 +11,7 @@ import remarkGfm from 'remark-gfm';
 import slugify from 'slugify';
 import { gfmFootnoteToMarkdown } from 'mdast-util-gfm-footnote';
 import { gfmStrikethroughToMarkdown } from 'mdast-util-gfm-strikethrough';
-import { BRACKET_LINK_REGEX, CALLOUT_REGEX, HEADING_REGEX, ICONS, EMBED_LINK_REGEX } from './constants';
+import { BRACKET_LINK_REGEX, CALLOUT_REGEX, HEADING_REGEX, ICONS, EMBED_LINK_REGEX, STRIKETHROUGH_REGEX } from './constants';
 import { removeIgnoreParts, addPaywall, ucFirst, removeFrontmatter, keepTaskCheckboxes } from './utils';
 
 const plugin = (options) => (tree) => {
@@ -37,7 +37,9 @@ const plugin = (options) => (tree) => {
     // eslint-disable-next-line complexity
     visit(tree, 'paragraph', (node) => {
         const markdown = toMarkdown(node, { extensions: [gfmFootnoteToMarkdown(), gfmStrikethroughToMarkdown] });
-        const paragraph = String(unified().use(remarkParse).use(remarkHtml).processSync(markdown)).replace(/&#x26;|&#38;/g, '&');
+        const paragraph = String(unified().use(remarkParse).use(remarkHtml).processSync(markdown))
+            .replace(/&#x26;|&#38;/g, '&')
+            .replace(STRIKETHROUGH_REGEX, (match, text) => (text ? `<del>${text}</del>` : match));
 
         if (paragraph.match(EMBED_LINK_REGEX)) {
             const html = paragraph.replace(
@@ -111,6 +113,11 @@ const plugin = (options) => (tree) => {
                 delete node.children; // eslint-disable-line no-param-reassign
                 return Object.assign(node, { type: 'html', value: html });
             }
+        }
+
+        if (paragraph.includes('<del>')) {
+            delete node.children; // eslint-disable-line no-param-reassign
+            return Object.assign(node, { type: 'html', value: paragraph });
         }
 
         return node;

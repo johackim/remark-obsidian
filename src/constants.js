@@ -6,6 +6,8 @@ export const CODE_BLOCK_REGEX = /(```[\s\S]*?```)|(?:`[^`]*?`)/g;
 
 export const CALLOUT_REGEX = /\\?\[!(?<type>\w+)\] ?(?<title>.+)?/;
 
+export const STRIKETHROUGH_REGEX = /<code>.*?<\/code>|~~(.+?)~~/g;
+
 export const HEADING_REGEX = /\[\[#([a-zA-ZÀ-ÿ0-9-'?%.():&,+/€! ]+)\]\]/g;
 
 export const NOTE_ICON = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="2" x2="22" y2="6"></line><path d="M7.5 20.5 19 9l-4-4L3.5 16.5 2 22z"></path></svg>';

@@ -19,6 +19,32 @@ test('Should support ==**highlight text**==', async () => {
     expect(output).toContain('<p><mark><b>highlight text</b></mark></p>');
 });
 
+test('Should support ~~strikethrough text~~', async () => {
+    const text = '~~strikethrough text~~';
+
+    const output = String(await remark().use(plugin).process(text));
+
+    expect(output).toContain('<p><del>strikethrough text</del></p>');
+});
+
+test('Should support ~~strikethrough text~~ with an [[Internal link]]', async () => {
+    const text = '~~strikethrough text~~ with [[Internal link]]';
+
+    const output = String(await remark().use(plugin).process(text));
+
+    expect(output).toContain('<del>strikethrough text</del>');
+    expect(output).toContain('<a href="/internal-link" title="Internal link">Internal link</a>');
+});
+
+test('Should ignore strikethrough inside code blocks', async () => {
+    const text = '`~~strikethrough text~~`';
+
+    const output = String(await remark().use(plugin).process(text));
+
+    expect(output).toContain('`~~strikethrough text~~`');
+    expect(output).not.toContain('<del>');
+});
+
 test('Should support [[Internal link]]', async () => {
     const text = '[[Internal link]]';
 
