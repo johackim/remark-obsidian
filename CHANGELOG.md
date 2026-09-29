@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.14.0](https://github.com/johackim/remark-obsidian/compare/v1.13.0...v1.14.0) (2026-09-29)
+
+
+### Features
+
+* add strikethrough text support ([1d3af98](https://github.com/johackim/remark-obsidian/commit/1d3af98b8f056f9a92abccdd02935e1e89d7b87a))
+
 ## [1.13.0](https://github.com/johackim/remark-obsidian/compare/v1.12.1...v1.13.0) (2026-09-28)
 
 
