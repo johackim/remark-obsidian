@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.15.0](https://github.com/johackim/remark-obsidian/compare/v1.14.0...v1.15.0) (2026-10-15)
+
+
+### Features
+
+* support links in callout titles ([15040ac](https://github.com/johackim/remark-obsidian/commit/15040ac599b6bbb181142cf2b7af75198982a17e))
+
 ## [1.14.0](https://github.com/johackim/remark-obsidian/compare/v1.13.0...v1.14.0) (2026-09-29)
 
 
