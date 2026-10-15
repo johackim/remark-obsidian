@@ -14,6 +14,10 @@ import { gfmStrikethroughToMarkdown } from 'mdast-util-gfm-strikethrough';
 import { BRACKET_LINK_REGEX, CALLOUT_REGEX, HEADING_REGEX, ICONS, EMBED_LINK_REGEX, STRIKETHROUGH_REGEX } from './constants';
 import { removeIgnoreParts, addPaywall, ucFirst, removeFrontmatter, keepTaskCheckboxes } from './utils';
 
+const markdownToHtml = (markdown) => String(remark().use(remarkGfm).use(remarkHtml, { sanitize: false }).processSync(markdown)).trim();
+
+const removeParagraphTag = (html) => html.trim().replace(/^<p>|<\/p>$/g, '');
+
 const plugin = (options) => (tree) => {
     const {
         baseUrl = '',
@@ -124,15 +128,16 @@ const plugin = (options) => (tree) => {
     });
 
     visit(tree, 'blockquote', (node, index, parent) => {
-        const markdown = toMarkdown(node, { extensions: [gfmFootnoteToMarkdown(), gfmStrikethroughToMarkdown] }).replace(/^> ?/gm, '').replace(/\n(?=[^\n*+\-\d])/g, '\n\n');
+        const markdown = toMarkdown(node, { extensions: [gfmFootnoteToMarkdown(), gfmStrikethroughToMarkdown], handlers: { html: ({ value }) => removeParagraphTag(value) } }).replace(/^> ?/gm, '').replace(/\n(?=[^\n*+\-\d])/g, '\n\n');
         const match = CALLOUT_REGEX.exec(markdown);
 
         if (match) {
             const [signal, type, title] = match;
             const icon = ICONS[type.toLowerCase()];
-            const content = String(remark().use(remarkGfm).use(remarkHtml).processSync(markdown.replace(signal, '').trim())).trim();
+            const content = markdownToHtml(markdown.replace(signal, '').trim());
+            const titleHtml = title ? removeParagraphTag(markdownToHtml(signal)).replace(/^\[!\w+\] ?/, '') : ucFirst(type);
 
-            const calloutTitle = (icon || title) ? `<div class="callout-title">${icon ? `<div class="callout-icon">${icon}</div>` : ''}<div class="callout-title-inner">${title || ucFirst(type)}</div></div>` : '';
+            const calloutTitle = (icon || title) ? `<div class="callout-title">${icon ? `<div class="callout-icon">${icon}</div>` : ''}<div class="callout-title-inner">${titleHtml}</div></div>` : '';
 
             parent.children.splice(index, 1, {
                 type: 'html',

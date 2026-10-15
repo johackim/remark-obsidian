@@ -210,6 +210,29 @@ test('Should support > [!CALLOUT] with multiple paragraphs', async () => {
     expect(output).toContain('<p>Second paragraph.</p>');
 });
 
+test('Should support markdown links inside callout title', async () => {
+    const text = [
+        '> [!QUOTE] [Wikipedia](https://wikipedia.org) **bold**',
+        '> This is a quote',
+    ].join('\n');
+
+    const output = String(await remark().use(plugin).process(text));
+
+    expect(output).toContain('<div class="callout-title-inner"><a href="https://wikipedia.org">Wikipedia</a> <strong>bold</strong></div>');
+});
+
+test('Should support wikilinks inside callouts', async () => {
+    const text = [
+        '> [!QUOTE] [[Title]]',
+        '> See [[Note]]',
+    ].join('\n');
+
+    const output = String(await remark().use(plugin).process(text));
+
+    expect(output).toContain('<div class="callout-title-inner"><a href="/title" title="Title">Title</a></div>');
+    expect(output).toContain('<div class="callout-content"><p>See <a href="/note" title="Note">Note</a></p></div>');
+});
+
 test('Should support markdown formatting inside callouts', async () => {
     const text = [
         '> [!NOTE]',
